@@ -1,7 +1,5 @@
 ﻿#requires -Version 3.0 -Modules Microsoft.PowerShell.Utility
 
-
-
 #region Portable_Section 
 
 # The "$SplatSendEmail" should be the only information you need to change to send an email.  
@@ -20,6 +18,53 @@ $SplatSendEmail = @{
 
 function Send-eMail
 {
+  <#
+    .SYNOPSIS
+    Describe purpose of "Send-eMail" in 1-2 sentences.
+
+    .DESCRIPTION
+    Add a more complete description of what the function does.
+
+    .PARAMETER MailTo
+    Describe parameter -MailTo.
+
+    .PARAMETER MailFrom
+    Describe parameter -MailFrom.
+
+    .PARAMETER msgsubj
+    Describe parameter -msgsubj.
+
+    .PARAMETER SmtpServers
+    Describe parameter -SmtpServers.
+
+    .PARAMETER MessageBody
+    Describe parameter -MessageBody.
+
+    .PARAMETER AttachedFile
+    Describe parameter -AttachedFile.
+
+    .PARAMETER ErrorFile
+    Describe parameter -ErrorFile.
+
+    .EXAMPLE
+    Send-eMail -MailTo Value -MailFrom Value -msgsubj Value -SmtpServers Value -MessageBody Value -AttachedFile Value -ErrorFile Value
+    Describe what this call does
+
+    .NOTES
+    Place additional notes here.
+
+    .LINK
+    URLs to related sites
+    The first link is opened by Get-Help -Online Send-eMail
+
+    .INPUTS
+    List of input types that are accepted by this function.
+
+    .OUTPUTS
+    List of output types produced by this function.
+  #>
+
+
   [CmdletBinding(DefaultParameterSetName = 'Default')]
   param
   (
@@ -33,7 +78,7 @@ function Send-eMail
     [String[]]$SmtpServers,
     [Parameter(Position = 4)]
     [AllowNull()]
-    $MessageBody,
+    [Object]$MessageBody,
     [Parameter(Position = 5)]
     [AllowNull()]
     [Object]$AttachedFile,
@@ -51,7 +96,7 @@ function Send-eMail
   }
   elseif(($MessageBody -match '.txt') -or ($MessageBody -match '.htm'))
   {
-    if(Test-Path $MessageBody)
+    if(Test-Path -Path $MessageBody)
     {
       [String]$MessageBody = Get-Content -Path $MessageBody
     }
