@@ -410,4 +410,4 @@ function Send-eMail
 }
 
 
-Export-ModuleMember -Function Send-Email,  Get-Versions,  Get-CurrentLineNumber,  Set-SafetySwitch,  Compare-FileHash,  Import-FileData
+#Export-ModuleMember -Function Send-Email,  Get-Versions,  Get-CurrentLineNumber,  Set-SafetySwitch,  Compare-FileHash,  Import-FileData

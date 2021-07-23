@@ -1,67 +1,57 @@
-﻿#requires -Version 3.0 -Modules Microsoft.PowerShell.Utility
-
-#region Portable_Section 
-
-# The "$SplatSendEmail" should be the only information you need to change to send an email.  
-$SplatSendEmail = @{
-  MailTo       = @('erik@knarrstudio.com')
-  MailFrom     = "$($env:computername)@mail.com"
-  msgsubj      = "Service Restarted - $(Get-Date -Format G)"
-  SmtpServers  = '192.168.0.5', '192.168.1.8'
-  MessageBody  = $EmailMessage
-  ErrorFile    = ''
-  AttachedFile = $AttachedFile
-  Verbose      = $true
-}   
-
-#region Portable_Function
-
-function Send-eMail
+﻿function Send-eMail
 {
   <#
-    .SYNOPSIS
-    Describe purpose of "Send-eMail" in 1-2 sentences.
+      .SYNOPSIS
+      Send an email notification via script.  Uses local service account and mail server.
 
-    .DESCRIPTION
-    Add a more complete description of what the function does.
+      .DESCRIPTION
+      Send an email notification via script.  Uses local service account and mail server.
+      Sends and email from a script run at the server.  This generates output to the console.
 
-    .PARAMETER MailTo
-    Describe parameter -MailTo.
+      .PARAMETER MailTo
+      Receivers email address
 
-    .PARAMETER MailFrom
-    Describe parameter -MailFrom.
+      .PARAMETER MailFrom
+      Senders email address
 
-    .PARAMETER msgsubj
-    Describe parameter -msgsubj.
+      .PARAMETER msgsubj
+      Email subject.  This is always a good idea.
 
-    .PARAMETER SmtpServers
-    Describe parameter -SmtpServers.
+      .PARAMETER SmtpServers
+      Name or IP addess of SMTP servers
 
-    .PARAMETER MessageBody
-    Describe parameter -MessageBody.
+      .PARAMETER MessageBody
+      The message.  This could be an error from  a catch statement or just information about it being completed
 
-    .PARAMETER AttachedFile
-    Describe parameter -AttachedFile.
+      .PARAMETER AttachedFile
+      Email attachemt
 
-    .PARAMETER ErrorFile
-    Describe parameter -ErrorFile.
+      .PARAMETER ErrorFile
+      File to send the error message.
 
-    .EXAMPLE
-    Send-eMail -MailTo Value -MailFrom Value -msgsubj Value -SmtpServers Value -MessageBody Value -AttachedFile Value -ErrorFile Value
-    Describe what this call does
+      .EXAMPLE
+      Send-eMail -MailTo Value -MailFrom Value -msgsubj Value -SmtpServers Value -MessageBody Value -AttachedFile Value -ErrorFile Value
 
-    .NOTES
-    Place additional notes here.
+      .EXAMPLE
+      # The "$SplatSendEmail" should be the only information you need to change to send an email.  
+      $SplatSendEmail = @{
+      MailTo       = @('erik@knarrstudio.com')
+      MailFrom     = "$($env:computername)@mail.com"
+      msgsubj      = "Service Restarted - $(Get-Date -Format G)"
+      SmtpServers  = '192.168.0.5', '192.168.1.8'
+      MessageBody  = $EmailMessage
+      ErrorFile    = ''
+      AttachedFile = $AttachedFile
+      Verbose      = $true
+      }  
+      
+      Send-eMail @SplatSendEmail 
 
-    .LINK
-    URLs to related sites
-    The first link is opened by Get-Help -Online Send-eMail
 
-    .INPUTS
-    List of input types that are accepted by this function.
+      .NOTES
+      The current version is somewhat interactive and needs to be run from a console.  
+      Later versions should be written to be used without user intervention
 
-    .OUTPUTS
-    List of output types produced by this function.
   #>
 
 
@@ -71,9 +61,9 @@ function Send-eMail
     [Parameter(Mandatory,HelpMessage = 'To email address(es)', Position = 0)]
     [String[]]$MailTo,
     [Parameter(Mandatory,HelpMessage = 'From email address', Position = 1)]
-    [Object]$MailFrom,
+    [String]$MailFrom,
     [Parameter(Mandatory,HelpMessage = 'Email subject', Position = 2)]
-    [Object]$msgsubj,
+    [String]$msgsubj,
     [Parameter(Mandatory,HelpMessage = 'SMTP Server(s)', Position = 3)]
     [String[]]$SmtpServers,
     [Parameter(Position = 4)]
@@ -81,7 +71,7 @@ function Send-eMail
     [Object]$MessageBody,
     [Parameter(Position = 5)]
     [AllowNull()]
-    [Object]$AttachedFile,
+    [String]$AttachedFile,
     [Parameter(Position = 6)]
     [AllowEmptyString()]
     [string]$ErrorFile = ''
@@ -144,7 +134,6 @@ function Send-eMail
       Send-MailMessage -SmtpServer $SMTPServer  @SplatSendMessage
       # Write-Output $SMTPServer  @SplatSendMessage
       Write-Verbose -Message ('successful from {0}' -f $SMTPServer)
-      Write-Host -Object ("`nsuccessful from {0}" -f $SMTPServer) -ForegroundColor green
       Break 
     } 
     catch 
@@ -157,9 +146,3 @@ function Send-eMail
     }
   }
 }
-
-#endregion Portable_Function
-
-Send-eMail @SplatSendEmail 
-
-#endregion Portable_Section
