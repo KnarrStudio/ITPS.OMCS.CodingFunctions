@@ -19,7 +19,7 @@
   #>
 
   Param(
-    [Parameter(Mandatory,HelpMessage = 'The file that you are testing against.  Normally the file that you just downloaded.')]
+    [Parameter(Mandatory=$true, ValueFromPipeline=$true,ValueFromPipelineByPropertyName=$true,HelpMessage = 'The file that you are testing against.  Normally the file that you just downloaded.')]
     [string] $fileName
     ,
     [Parameter(Mandatory,HelpMessage = 'The original hash that you are expecting it to be the same.  Normally provided by website at download.')]
@@ -48,3 +48,4 @@
 
   #Write-Output -InputObject $output
 }
+

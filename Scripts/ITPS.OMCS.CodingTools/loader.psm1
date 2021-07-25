@@ -14,4 +14,4 @@
 . $PSScriptRoot\Import-FileData.ps1
 . $PSScriptRoot\Send-eMail.ps1
 . $PSScriptRoot\Set-SafetySwitch.ps1
-. $PSScriptRoot\Update-ManifestModule.ps1
+

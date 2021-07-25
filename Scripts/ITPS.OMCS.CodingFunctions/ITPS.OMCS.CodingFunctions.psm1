@@ -182,7 +182,7 @@ Function Compare-FileHash
   #>
 
   Param(
-    [Parameter(Mandatory,HelpMessage = 'The file that you are testing against.  Normally the file that you just downloaded.')]
+    [Parameter(Mandatory,ValueFromPipeline,ValueFromPipelineByPropertyName,HelpMessage = 'The file that you are testing against.  Normally the file that you just downloaded.')]
     [string] $fileName
     ,
     [Parameter(Mandatory,HelpMessage = 'The original hash that you are expecting it to be the same.  Normally provided by website at download.')]
@@ -235,7 +235,7 @@ function Import-FileData
 
 
   param(
-    [Parameter(Mandatory,HelpMessage = 'Name of file to be imported.')]
+    [Parameter(Mandatory,ValueFromPipeline,ValueFromPipelineByPropertyName,HelpMessage = 'Name of file to be imported.')]
     [String]$fileName,
     [Parameter(Mandatory,HelpMessage = 'File type to be imported, but really how you want it to be handled.  ie txt could be a csv')]
     [ValidateSet('csv','txt','json')]
@@ -326,7 +326,7 @@ function Send-eMail
     [String]$MailFrom,
     [Parameter(Mandatory,HelpMessage = 'Email subject', Position = 2)]
     [String]$msgsubj,
-    [Parameter(Mandatory,HelpMessage = 'SMTP Server(s)', Position = 3)]
+    [Parameter(Mandatory,ValueFromPipeline,ValueFromPipelineByPropertyName,HelpMessage = 'SMTP Server(s)', Position = 3)]
     [String[]]$SmtpServers,
     [Parameter(Position = 4)]
     [AllowNull()]
