@@ -76,7 +76,7 @@ function Get-CurrentLineNumber
 
   param
   (
-    [Parameter(Mandatory=$true,HelpMessage='See "get-help Get-CurrentLineNumber" for different options',Position = 0)]
+    [Parameter(Mandatory = $true,HelpMessage = 'See "get-help Get-CurrentLineNumber" for different options',Position = 0)]
     [int]$MsgNum
   )
   $VerboseMsg = @{
@@ -127,7 +127,7 @@ Function Set-SafetySwitch
   (
     [Parameter(Position = 1)]
     [Switch]$Bombastic,
-    [Parameter(Mandatory,HelpMessage='Hard set on/off',Position = 0,ParameterSetName = 'Switch')]
+    [Parameter(Mandatory,HelpMessage = 'Hard set on/off',Position = 0,ParameterSetName = 'Switch')]
     [ValidateSet('No','Yes')]
     [String]$RunScript,
     [Parameter(Position = 0, ParameterSetName = 'Default')]
@@ -136,29 +136,48 @@ Function Set-SafetySwitch
 
   $Message = @{
     BombasticOff = 'Safety is OFF - Script is active and will make changes'
-    BombasticOn= 'Safety is ON - Script is TESTING MODE'
+    BombasticOn  = 'Safety is ON - Script is TESTING MODE'
   }
 
-  function Set-WhatIfOn{<#.SYNOPSIS;Sets Whatif to True#>
-    $Script:WhatIfPreference = $true}
-  function Set-WhatIfOff{<#.SYNOPSIS;Sets Whatif to False#>
-    $Script:WhatIfPreference = $false}
+  function Set-WhatIfOn
+  {
+    <#.SYNOPSIS;Sets Whatif to True#>
+    $Script:WhatIfPreference = $true
+  }
+  function Set-WhatIfOff
+  {
+    <#.SYNOPSIS;Sets Whatif to False#>
+    $Script:WhatIfPreference = $false
+  }
 
-  if($Toggle){
+  if($Toggle)
+  {
     If ($WhatIfPreference -eq $true)
     {
       Set-WhatIfOff
-      if ($Bombastic){Write-Host $($Message.BombasticOff) -ForegroundColor Red}
+      if ($Bombastic)
+      {
+        Write-Host -Object $($Message.BombasticOff) -ForegroundColor Red
+      }
     }
     else
     {
       Set-WhatIfOn
-      if ($Bombastic){Write-Host $($Message.BombasticOn) -ForegroundColor Green}
+      if ($Bombastic)
+      {
+        Write-Host -Object $($Message.BombasticOn) -ForegroundColor Green
+      }
     }
   }
 
-  if($RunScript -eq 'Yes'){Set-WhatIfOff}
-  elseif($RunScript -eq 'No'){Set-WhatIfOn}
+  if($RunScript -eq 'Yes')
+  {
+    Set-WhatIfOff
+  }
+  elseif($RunScript -eq 'No')
+  {
+    Set-WhatIfOn
+  }
 }
 
 Function Compare-FileHash 
@@ -244,16 +263,20 @@ function Import-FileData
   
   switch ($FileType)
   {
-    'csv'    {
+    'csv'    
+    {
       $importdata = Import-Csv -Path $fileName
     }
-    'txt'    {
+    'txt'    
+    {
       $importdata = Get-Content -Path $fileName -Raw
     }  
-    'json'   {
+    'json'   
+    {
       $importdata = Get-Content -Path .\config.json
     }
-    default    {
+    default    
+    {
       $importdata = $null
     }
   }
@@ -409,5 +432,288 @@ function Send-eMail
   }
 }
 
+function Get-TimeStamp
+{
+  <#
+      .SYNOPSIS
+      Simple date time stamp, for the person that is tired of looking up format syntax
 
-#Export-ModuleMember -Function Send-Email,  Get-Versions,  Get-CurrentLineNumber,  Set-SafetySwitch,  Compare-FileHash,  Import-FileData
+      .DESCRIPTION
+      Creates a function around the "Get-Date -Uformat" to make getting standard dates/times.
+      Use the following formats:
+      20170316 = YYYYMMDD
+      16214855 = DDHHmmss
+      17/03/16 21:52 = YYMMDD_HHmm
+      1703162145 = YYMMDDHHmm
+      07/26/21 08:45:19 = MMDDTT-HH:mm:ss
+      03/16/2018 = Default
+
+      .PARAMETER Format
+      Used to select the built in formats
+      1: YYMMDDhhmm  (Two digit year followed by two digit month day hours minutes.  This is good for the report that runs more than once a day)  -example 1703162145
+      2: YYYYMMDD  (Four digit year two digit month day.  This is for the once a day report)  -example 20170316 
+      3: jjjhhmmss (Julian day then hours minutes seconds.  Use this when you are testing, troubleshooting or creating.  You won't have to worry about overwrite or append errors)  -example 160214855 
+      4: YY-MM-DD_hh.mm  (Two digit year-month-day _ Hours:Minutes)  -example 17-03-16_21.52
+      5: yyyy-mm-ddThour.min.sec.milsec-tzOffset (Four digit year two digit month and day "T" starts the time section two digit hour minute seconds then milliseconds finish with the offset from UTC -example 2019-04-24T07:23:51.3195398-04:00
+      
+
+      .PARAMETER AsFilename
+      In the event you want to use the date/time stamp as a filename, it replaces " "(space), ":", and "/" charectors with file friendly ones.
+      " " becomes "_"
+      ":" becomes "."
+      "/" becomes "-"
+
+      .EXAMPLE
+      Get-TimeStamp -Format MMDDYY-HHmmss 
+      Returns - 07/26/21 09:32:25
+
+
+      .EXAMPLE
+      Get-TimeStamp -Format MMDDYY-HHmmss -AsFilename
+      Returns - 07-26-21_09.32.25
+
+      .NOTES
+      Place additional notes here.
+
+  #>
+
+  param
+  (
+    [Parameter(Mandatory,HelpMessage = 'Use the following formats: YYYYMMDD, DDHHmmss, YYMMDD-24HHmm, YYYYMMDDHHmm, MM-DD-YY_HHmmss, YYYY-MM-DD, JJJHHmmss, DayOfYear, tzOffset')]
+    [ValidateSet('YYYYMMDD', 'DDHHmmss', 'YYMMDD-24HHmm-f', 'YYYYMMDDHHmm', 'MM-DD-YY_HHmmss-f','YYYY-MM-DD', 'JJJHHmmss', 'DayOfYear', 'tzOffset-f')] 
+    [String]$Format,
+    [Switch]$AsFilename
+  )
+  
+  switch ($Format) {
+    YYYYMMDD
+    {
+      $SplatFormat = @{
+        UFormat = '%Y%m%d'
+      }
+    } # 20170316 YYYYMMDD
+    DDHHmmss
+    {
+      $SplatFormat = @{
+        UFormat = '%b%d%H%M%S'
+      }
+    } # Mar16214855 MMMDDHHmmss
+    YYMMDD-24HHmm-f
+    {
+      $SplatFormat = @{
+        UFormat = '%y/%m/%d %R'
+      }
+    } # 17/03/16 21:52 YYMMDD-24HHmm
+    YYYYMMDDHHmm
+    {
+      $SplatFormat = @{
+        UFormat = '%Y%m%d%H%M'
+      }
+    } # 1703162145 YYMMDDHHmm
+    MM-DD-YY_HHmmss-f
+    {
+      $SplatFormat = @{
+        UFormat = '%D %R:%S'
+      }
+    } # 07/26/21 08:45:19 MMDDTT-HH:mm:ss
+    YYYY-MM-DD
+    {
+      $SplatFormat = @{
+        UFormat = '%F'
+      }
+    } # 2018-05-12 (ISO 8601 format)
+    JJJHHmmss
+    {
+      $SplatFormat = @{
+        UFormat = '%j%H%M%S'
+      }
+    } # 207094226 JJJHHmmss Julion Day
+    DayOfYear
+    {
+      $SplatFormat = @{
+        UFormat = '%j'
+      }
+    } # Day of Year
+    tzOffset
+    {
+      $SplatFormat = @{
+        UFormat = '%y %b %d %R %Z'
+      }
+    } # YYYY MMM DD - timezone offest
+    Default
+    {
+      $SplatFormat = @{}
+    }
+  }
+    
+  $TimeStamp = Get-Date @SplatFormat
+  
+  if($AsFilename)
+  {
+    $TimeStamp = $TimeStamp.Replace('/','-').Replace(':','.').Replace(' ','_')
+  }
+  
+  return [String]$TimeStamp
+}
+
+function New-TimestampFile 
+{
+      <#
+      .SYNOPSIS
+      Creates a file with a timestamp
+
+      .DESCRIPTION
+      Allows you to create a file with a time stamp.  You provide the base name, extension, time/date stamp and if you want to append or overwrite the file.
+
+      .PARAMETER FileName
+      Name of the file "Import-FileData.ps1"
+
+      .PARAMETER TimeStamp
+      However you want to create the timestame.
+      You can use a string, or "Get-Date -format"
+
+      Or you can use the "Get-TimeStamp", which was originally built into the script, but pulled out to be more widely used.
+      Get-TimeStamp -Format YYYY-MM-DD -AsFilename 
+      Excepted Formats: formats - YYYYMMDD, DDHHmmss, YYMMDD-24HHmm, YYYYMMDDHHmm, MM-DD-YY_HHmmss, YYYY-MM-DD, JJJHHmmss, DayOfYear, tzOffset
+      The formats with the "ss" on the end are for seconds, so eversecond you could create a new file.  
+      The formats with the "-f" on the end are the ones which have special characters and will need the "-AsFilename" to be used in a filename
+
+      .PARAMETER Update
+      Looks for the file and does nothing if it exists.  You would use this with "Append".
+      If the file does not exist, then it will create it.
+
+      .PARAMETER Overwrite
+      Just simply creates a new file with the "-force" parameter.  
+      It doesn't bother to check.  
+
+      .PARAMETER AddOn
+      This is default and is optional.
+      This looks for the file and if it exists, it creates a new file such as "Import-FileData-210727(1).ps1".  If you were to run it again, you would get "Import-FileData-210727(2).ps1"
+      If it doesn't exist, it creates the file as input.  "Import-FileData-210727.ps1"
+
+      .EXAMPLE
+      New-TimestampFile  -FileName Import-FileData.ps1
+
+      If Not Exist (Creates): Import-FileData-210727.ps1
+      If Exists x2 (Creates): Import-FileData-210727(3).ps1
+
+      
+      .EXAMPLE
+      New-TimestampFile  -FileName Import-FileData.ps1 -TimeStamp 123456
+      
+      If Not Exist (Creates): Import-FileData-123456.ps1
+      If Exists x2 (Creates): Import-FileData-123456(3).ps1
+      
+      .EXAMPLE
+      $filename = 'Import-FileData.ps1' ; $timeStamp = Get-TimeStamp -Format YYYYMMDD -AsFilename ; New-TimestampFile $filename $timeStamp
+      
+      If Not Exist (Creates): Import-FileData-20210727.ps1
+
+      .EXAMPLE
+      $filename = 'Import-FileData.ps1' ; Get-TimeStamp -Format YYYYMMDD -AsFilename | New-TimestampFile $filename
+
+      If Not Exist (Creates): Import-FileData-20210727.ps1
+
+      New-TimestampFile  -FileName Import-FileData.ps1 -Update
+      
+      If Not Exist (Creates): Import-FileData-20210727.ps1
+      If Exist (No Change): Import-FileData-20210727.ps1
+
+
+      .EXAMPLE
+      New-TimestampFile  -FileName Import-FileData.ps1 -Overwrite
+      If Not Exist (Creates): Import-FileData-20210727.ps1
+      If Exists (Overwrites): Import-FileData-20210727.ps1
+
+      .EXAMPLE
+      New-TimestampFile  -FileName Import-FileData.ps1 -AddOn
+      If Not Exist (Creates): Import-FileData-20210727.ps1
+      If Exists (Increments num in "($i)"): Import-FileData-20210727(1).ps1
+
+      .INPUTS
+      Strings.
+
+  #>
+
+  #[cmdletbinding(DefaultParameterSetName = 'FileName')]
+  [cmdletbinding()]
+  param
+  (
+    [Parameter(Mandatory,Position = 0,ValueFromPipeline, ValueFromPipelineByPropertyName,HelpMessage = 'Full file name')]
+    [Alias('FullName')]
+    [String]$FileName,
+    [Parameter(Mandatory = $false,Position = 1,ValueFromPipeline, ValueFromPipelineByPropertyName)]
+    [String]$TimeStamp = $(Get-TimeStamp -Format YYYYMMDD -AsFilename ), #$(Get-Date -UFormat '%y%m%d_%H%M%S')
+    [Parameter(Mandatory,Position = 2,HelpMessage = 'Update or Append file',ParameterSetName = 'Update')]
+    [Switch]$Update,
+    [Parameter(Mandatory,Position = 2,HelpMessage = 'Overwrite or Delete and recreate file',ParameterSetName = 'Overwrite')]
+    [Switch]$Overwrite,
+    [Parameter(Mandatory = $false,Position = 2,HelpMessage = 'Creates new file with "(1)"',ParameterSetName = 'Addon')]
+    [Switch]$AddOn = $true
+       
+  )
+ 
+  $SplatFile = @{}
+
+  $FileBaseName = (Get-ChildItem -Path $FileName).BaseName
+  $fileExt = (Get-ChildItem -Path $FileName).Extension
+  $DatedName = ('{0}-{1}' -f $FileBaseName, $TimeStamp)
+  $NewFile = ('{0}{1}' -f $DatedName, $fileExt)
+
+
+  Switch ($true){
+    $Update
+    {
+      Write-Verbose -Message 'update'
+      if(-not (Test-Path -Path $NewFile))
+      {
+        $SplatFile = @{
+          Path     = $NewFile
+          ItemType = 'File'
+          Force    = $false
+        }
+        $null = New-Item @SplatFile
+      }
+    }
+    
+    $Overwrite
+    {
+      Write-Verbose -Message 'Overwrite'
+      $SplatFile = @{
+        Path     = $NewFile
+        ItemType = 'File'
+        Force    = $true
+      }
+      $null = New-Item @SplatFile
+    }
+    
+    Default 
+    {
+      $i = 0
+      if(Test-Path -Path $NewFile)
+      {
+        do 
+        {
+          $NewFile = [String]('{0}({1}){2}' -f $DatedName , $i, $fileExt)
+          $i++
+        }
+        while (Test-Path -Path $NewFile)
+      }
+        
+      Write-Verbose -Message 'Addon'
+
+      $SplatFile = @{
+        Path     = $NewFile
+        ItemType = 'File'
+        Force    = $false
+      }
+      $null = New-Item @SplatFile
+    }
+
+  }
+}
+
+
+
+Export-ModuleMember -Function Send-eMail,  Get-Versions,  Get-CurrentLineNumber,  Set-SafetySwitch,  Compare-FileHash,  Import-FileData, New-TimestampFile 
+
