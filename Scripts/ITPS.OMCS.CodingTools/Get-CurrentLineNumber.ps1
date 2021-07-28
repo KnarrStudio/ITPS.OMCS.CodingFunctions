@@ -30,7 +30,7 @@
 
   param
   (
-    [Parameter(Mandatory=$true,HelpMessage='See "get-help Get-CurrentLineNumber" for different options',Position = 0)]
+    [Parameter(Mandatory = $true,HelpMessage = 'See "get-help Get-CurrentLineNumber" for different options',Position = 0)]
     [int]$MsgNum
   )
   $VerboseMsg = @{
@@ -48,4 +48,4 @@
     $MsgNum = 99
   }#$VerboseMsg.Count}
   'Line {0}:  {1}' -f $MyInvocation.ScriptLineNumber, $($VerboseMsg.$MsgNum)
-}
+} 
