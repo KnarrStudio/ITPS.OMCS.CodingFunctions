@@ -8,7 +8,7 @@
   ([Parameter(Mandatory = $false, Position = 0)][Object]$input
   )
   $WinOS = 'Windows'
-[String]$MagMinVer = '{0}.{1}'
+  [String]$MagMinVer = '{0}.{1}'
   [Float]$PsVersion = ($MagMinVer -f [int]($psversiontable.PSVersion).Major, [int]($psversiontable.PSVersion).Minor)
   if($PsVersion  -ge 6)
   {
