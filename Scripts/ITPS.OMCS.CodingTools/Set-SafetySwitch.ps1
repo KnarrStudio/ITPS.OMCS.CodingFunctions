@@ -29,7 +29,7 @@
   (
     [Parameter(Position = 1)]
     [Switch]$Bombastic,
-    [Parameter(Mandatory,HelpMessage='Hard set on/off',Position = 0,ParameterSetName = 'Switch')]
+    [Parameter(Mandatory,HelpMessage = 'Hard set on/off',Position = 0,ParameterSetName = 'Switch')]
     [ValidateSet('No','Yes')]
     [String]$RunScript,
     [Parameter(Position = 0, ParameterSetName = 'Default')]
@@ -38,27 +38,46 @@
 
   $Message = @{
     BombasticOff = 'Safety is OFF - Script is active and will make changes'
-    BombasticOn= 'Safety is ON - Script is TESTING MODE'
+    BombasticOn  = 'Safety is ON - Script is TESTING MODE'
   }
 
-  function Set-WhatIfOn{<#.SYNOPSIS;Sets Whatif to True#>
-    $Script:WhatIfPreference = $true}
-  function Set-WhatIfOff{<#.SYNOPSIS;Sets Whatif to False#>
-    $Script:WhatIfPreference = $false}
+  function Set-WhatIfOn
+  {
+    <#.SYNOPSIS;Sets Whatif to True#>
+    $Script:WhatIfPreference = $true
+  }
+  function Set-WhatIfOff
+  {
+    <#.SYNOPSIS;Sets Whatif to False#>
+    $Script:WhatIfPreference = $false
+  }
 
-  if($Toggle){
+  if($Toggle)
+  {
     If ($WhatIfPreference -eq $true)
     {
       Set-WhatIfOff
-      if ($Bombastic){Write-Host $($Message.BombasticOff) -ForegroundColor Red}
+      if ($Bombastic)
+      {
+        Write-Host -Object $($Message.BombasticOff) -ForegroundColor Red
+      }
     }
     else
     {
       Set-WhatIfOn
-      if ($Bombastic){Write-Host $($Message.BombasticOn) -ForegroundColor Green}
+      if ($Bombastic)
+      {
+        Write-Host -Object $($Message.BombasticOn) -ForegroundColor Green
+      }
     }
   }
 
-  if($RunScript -eq 'Yes'){Set-WhatIfOff}
-  elseif($RunScript -eq 'No'){Set-WhatIfOn}
+  if($RunScript -eq 'Yes')
+  {
+    Set-WhatIfOff
+  }
+  elseif($RunScript -eq 'No')
+  {
+    Set-WhatIfOn
+  }
 }
