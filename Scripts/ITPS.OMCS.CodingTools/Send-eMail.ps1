@@ -64,7 +64,7 @@
     [String]$MailFrom,
     [Parameter(Mandatory,HelpMessage = 'Email subject', Position = 2)]
     [String]$msgsubj,
-    [Parameter(Mandatory,HelpMessage = 'SMTP Server(s)', Position = 3)]
+    [Parameter(Mandatory,ValueFromPipeline,ValueFromPipelineByPropertyName,HelpMessage = 'SMTP Server(s)', Position = 3)]
     [String[]]$SmtpServers,
     [Parameter(Position = 4)]
     [AllowNull()]
