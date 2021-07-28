@@ -655,11 +655,15 @@ function New-TimestampFile
  
   $SplatFile = @{}
 
-  $FileBaseName = (Get-ChildItem -Path $FileName).BaseName
-  $fileExt = (Get-ChildItem -Path $FileName).Extension
+  if(Test-Path $FileName){
+    $FileBaseName = (Get-ChildItem -Path $FileName).BaseName
+    $fileExt = (Get-ChildItem -Path $FileName).Extension
+  }else{
+    $FileBaseName = $FileName.Split('.')[0]
+    $fileExt = ('.{0}' -f $FileName.Split('.')[1])
+  }
   $DatedName = ('{0}-{1}' -f $FileBaseName, $TimeStamp)
   $NewFile = ('{0}{1}' -f $DatedName, $fileExt)
-
 
   Switch ($true){
     $Update
@@ -714,6 +718,16 @@ function New-TimestampFile
 }
 
 
+<#
+Export-ModuleMember -Function Send-eMail
+Export-ModuleMember -Function Get-Versions
+Export-ModuleMember -Function Get-CurrentLineNumber
+Export-ModuleMember -Function Set-SafetySwitch
+Export-ModuleMember -Function Compare-FileHash
+Export-ModuleMember -Function Import-FileData  
+Export-ModuleMember -Function New-TimestampFile 
+Export-ModuleMember -Function Get-TimeStamp
+#>
 
-Export-ModuleMember -Function Send-eMail,  Get-Versions,  Get-CurrentLineNumber,  Set-SafetySwitch,  Compare-FileHash,  Import-FileData, New-TimestampFile 
+
 
