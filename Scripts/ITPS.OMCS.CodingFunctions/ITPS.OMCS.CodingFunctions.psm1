@@ -556,7 +556,7 @@ function Get-TimeStamp
   return [String]$TimeStamp
 }
 
-function New-TimestampFile 
+function New-TimeStampFile 
 {
       <#
       .SYNOPSIS
@@ -630,8 +630,29 @@ function New-TimestampFile
       If Not Exist (Creates): Import-FileData-20210727.ps1
       If Exists (Increments num in "($i)"): Import-FileData-20210727(1).ps1
 
+      .NOTES
+        REGEX Used: ^[A-Za-z0-9(?:()_ -]+\.[A-Za-z0-9]*$
+
+        Match a single character present in the list below [A-Za-z0-9(?:()_ -]
+            + matches the previous token between one and unlimited times, as many times as possible, giving back as needed (greedy)
+            A-Z matches a single character in the range between A (index 65) and Z (index 90) (case sensitive)
+            a-z matches a single character in the range between a (index 97) and z (index 122) (case sensitive)
+            0-9 matches a single character in the range between 0 (index 48) and 9 (index 57) (case sensitive)
+            (?:()_ - matches a single character in the list (?:)_ - (case sensitive)
+        
+        \. matches the character . with index 4610 (2E16 or 568) literally (case sensitive)
+        
+        Match a single character present in the list below [A-Za-z0-9]
+            * matches the previous token between zero and unlimited times, as many times as possible, giving back as needed (greedy)
+            A-Z matches a single character in the range between A (index 65) and Z (index 90) (case sensitive)
+            a-z matches a single character in the range between a (index 97) and z (index 122) (case sensitive)
+            0-9 matches a single character in the range between 0 (index 48) and 9 (index 57) (case sensitive)
+        
+        $ asserts position at the end of a line
+
+
       .INPUTS
-      Strings.
+      String
 
   #>
 
@@ -639,9 +660,19 @@ function New-TimestampFile
   [cmdletbinding()]
   param
   (
-    [Parameter(Mandatory,Position = 0,ValueFromPipeline, ValueFromPipelineByPropertyName,HelpMessage = 'Full file name')]
+    [Parameter(Mandatory,Position = 0,ValueFromPipeline, ValueFromPipelineByPropertyName,HelpMessage = 'File name "Fullname.extension"')]
     [Alias('FullName')]
-    [String]$FileName,
+    [ValidateScript({
+          $ptrn = '/^[A-Za-z0-9(?:()_ -]+\.[A-Za-z0-9]*$/gm'
+          If($_ -match $ptrn)
+          {
+            $true
+          }
+          Else
+          {
+            Throw 'Filename requires "." example: test.txt'
+          }
+    })][String]$Filename,
     [Parameter(Mandatory = $false,Position = 1,ValueFromPipeline, ValueFromPipelineByPropertyName)]
     [String]$TimeStamp = $(Get-TimeStamp -Format YYYYMMDD -AsFilename ), #$(Get-Date -UFormat '%y%m%d_%H%M%S')
     [Parameter(Mandatory,Position = 2,HelpMessage = 'Update or Append file',ParameterSetName = 'Update')]
@@ -655,13 +686,9 @@ function New-TimestampFile
  
   $SplatFile = @{}
 
-  if(Test-Path $FileName){
-    $FileBaseName = (Get-ChildItem -Path $FileName).BaseName
-    $fileExt = (Get-ChildItem -Path $FileName).Extension
-  }else{
-    $FileBaseName = $FileName.Split('.')[0]
-    $fileExt = ('.{0}' -f $FileName.Split('.')[1])
-  }
+  $FileBaseName = $FileName.Split('.')[0]
+  $fileExt = ('.{0}' -f $FileName.Split('.')[1])
+  
   $DatedName = ('{0}-{1}' -f $FileBaseName, $TimeStamp)
   $NewFile = ('{0}{1}' -f $DatedName, $fileExt)
 
