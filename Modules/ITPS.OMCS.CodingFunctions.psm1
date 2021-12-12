@@ -1,6 +1,7 @@
 ﻿#requires -Modules Microsoft.PowerShell.Utility
 #!/usr/bin/env powershell
 #requires -Version 4.0
+
 function Get-Versions
 {
   <#
@@ -11,9 +12,9 @@ function Get-Versions
   ([Parameter(Mandatory = $false, Position = 0)][Object]$input
   )
   $WinOS = 'Windows'
-  [String]$MagMinVer = '{0}.{1}'
-  [Float]$PsVersion = ($MagMinVer -f [int]($psversiontable.PSVersion).Major, [int]($psversiontable.PSVersion).Minor)
-  if($PsVersion  -ge 6)
+  [String]$MajMinVer = '{0}.{1}'
+  [Float]$PsVersion = ($MajMinVer -f [int]($psversiontable.PSVersion).Major, [int]($psversiontable.PSVersion).Minor)
+  if($PsVersion -ge 6)
   {
     if ($IsLinux) 
     {
@@ -31,7 +32,7 @@ function Get-Versions
   }
   Else
   {
-    Write-Output -InputObject ($MagMinVer -F ($(($psversiontable.PSVersion).Major), $(($psversiontable.PSVersion).Minor)))
+    Write-Output -InputObject ($MajMinVer -F ($(($psversiontable.PSVersion).Major), $(($psversiontable.PSVersion).Minor)))
     if($env:os)
     {
       $OperatingSys = $WinOS
@@ -107,76 +108,74 @@ Function Set-SafetySwitch
       Manually sets the "Safety" On/Off.
 
       .PARAMETER Toggle
-      changes the setting from its current state
+      Changes the setting from its current state. There is no output with this.  Use the "Bombastic" switch if you need a visual message.
+      By default this is set
 
       .PARAMTER Bombastic
-      Another word for verbose
-      It also is a toggle, so that you can add it to a menu.
+      Another word for verbose and is used to provide a colored (red/green) message of the current state to the console.  
+      You can add it to a menu.
 
       .EXAMPLE
       Set-SafetySwitch 
+      Sets the WhatIfPreference to the opposite of its current setting. No output message.
+
+      .EXAMPLE
+      Set-SafetySwitch -Bombastic
       Sets the WhatIfPreference to the opposite of its current setting
+       
+      Output is one of the two based on what is set:
+      'Safety is OFF - Script is active and will make changes'
+      'Safety is ON - Script is TESTING MODE'
 
       .NOTES
-      Best to just copy this into your script and call it how ever you want.I use a menu
+      Best to just copy this into your script and call it how ever you want. I use a menu.
+      Latest update allows you to pull out the working function 'Set-WhatIf'
 
   #>
   
   [CmdletBinding(SupportsShouldProcess,ConfirmImpact = 'Low',DefaultParameterSetName = 'Default')]
   param
   (
-    [Parameter(Position = 1)]
-    [Switch]$Bombastic,
+    [Parameter(Position = 0, ParameterSetName = 'Default')] [Switch]$Toggle = $true,
+    [Parameter(Position = 1)] [Switch]$Bombastic,
     [Parameter(Mandatory,HelpMessage = 'Hard set on/off',Position = 0,ParameterSetName = 'Switch')]
-    [ValidateSet('No','Yes')]
-    [String]$RunScript,
-    [Parameter(Position = 0, ParameterSetName = 'Default')]
-    [Switch]$Toggle = $true
+    [ValidateSet('No','Yes')] [String]$RunScript
   )
 
-  $Message = @{
-    BombasticOff = 'Safety is OFF - Script is active and will make changes'
-    BombasticOn  = 'Safety is ON - Script is TESTING MODE'
-  }
+  function Set-WhatIf
+  {
+    <#.SYNOPSIS;Sets Whatif to True or False#>
+    param (
+      [Alias('NoRun')]
+      [Parameter(Mandatory,HelpMessage = 'Hard set on. Test Script',Position = 0,ParameterSetName = 'On')][Switch]$On,
+      [Alias('YesRun')]
+      [Parameter(Mandatory,HelpMessage = 'Hard set off. Run Script',Position = 0,ParameterSetName = 'Off')][Switch]$Off,
+      [Switch]$Script:Bombastic
+    )
 
-  function Set-WhatIfOn
-  {
-    <#.SYNOPSIS;Sets Whatif to True#>
-    $Script:WhatIfPreference = $true
-  }
-  function Set-WhatIfOff
-  {
-    <#.SYNOPSIS;Sets Whatif to False#>
-    $Script:WhatIfPreference = $false
-  }
+    $Message = @{
+      BombasticOff = 'Safety is OFF - Script is active and will make changes'
+      BombasticOn  = 'Safety is ON - Script is TESTING MODE'    }
 
-  if($Toggle)
-  {
-    If ($WhatIfPreference -eq $true)
-    {
-      Set-WhatIfOff
-      if ($Bombastic)
-      {
-        Write-Host -Object $($Message.BombasticOff) -ForegroundColor Red
-      }
+    if($On) {
+      $Script:WhatIfPreference = $true
+      if ($Bombastic) { Write-Host -Object $($Message.BombasticOn) -ForegroundColor Green  }
     }
-    else
-    {
-      Set-WhatIfOn
-      if ($Bombastic)
-      {
-        Write-Host -Object $($Message.BombasticOn) -ForegroundColor Green
-      }
+    if($Off) {
+      $Script:WhatIfPreference = $false
+      if ($Bombastic) { Write-Host -Object $($Message.BombasticOff) -ForegroundColor Red  }
     }
   }
 
-  if($RunScript -eq 'Yes')
-  {
-    Set-WhatIfOff
-  }
-  elseif($RunScript -eq 'No')
-  {
-    Set-WhatIfOn
+  if($RunScript -eq 'Yes') { 
+    Set-WhatIf -YesRun }
+  elseif($RunScript -eq 'No') { 
+    Set-WhatIf -NoRun }
+  elseif($Toggle) { 
+    if ($WhatIfPreference -eq $true) { 
+      Set-WhatIf -Off }
+    else { 
+      Set-WhatIf -On }
   }
 }
 
@@ -480,7 +479,7 @@ function Get-TimeStamp
   param
   (
     [Parameter(Mandatory,HelpMessage = 'Use the following formats: YYYYMMDD, DDHHmmss, YYMMDD-24HHmm, YYYYMMDDHHmm, MM-DD-YY_HHmmss, YYYY-MM-DD, JJJHHmmss, DayOfYear, tzOffset')]
-    [ValidateSet('YYYYMMDD', 'DDHHmmss', 'YYMMDD-24HHmm-f', 'YYYYMMDDHHmm', 'MM-DD-YY_HHmmss-f','YYYY-MM-DD', 'JJJHHmmss', 'DayOfYear', 'tzOffset-f')] 
+    [ValidateSet('YYYYMMDD', 'DDHHmmss', 'YYYYMMDDHHmm','YYYY-MM-DD', 'JJJHHmmss', 'DayOfYear', 'MM-DD-YY_HHmmss-f', 'YYMMDD-24HHmm-f', 'tzOffset')] 
     [String]$Format,
     [Switch]$AsFilename
   )
@@ -497,25 +496,13 @@ function Get-TimeStamp
       $SplatFormat = @{
         UFormat = '%b%d%H%M%S'
       }
-    } # Mar16214855 MMMDDHHmmss
-    YYMMDD-24HHmm-f
-    {
-      $SplatFormat = @{
-        UFormat = '%y/%m/%d %R'
-      }
-    } # 17/03/16 21:52 YYMMDD-24HHmm
+    } # Mar16214855 MMMDDHHmmss  
     YYYYMMDDHHmm
     {
       $SplatFormat = @{
         UFormat = '%Y%m%d%H%M'
       }
     } # 1703162145 YYMMDDHHmm
-    MM-DD-YY_HHmmss-f
-    {
-      $SplatFormat = @{
-        UFormat = '%D %R:%S'
-      }
-    } # 07/26/21 08:45:19 MMDDTT-HH:mm:ss
     YYYY-MM-DD
     {
       $SplatFormat = @{
@@ -534,10 +521,31 @@ function Get-TimeStamp
         UFormat = '%j'
       }
     } # Day of Year
-    tzOffset
+    YYMMDD-24HHmm-f
     {
       $SplatFormat = @{
-        UFormat = '%y %b %d %R %Z'
+        UFormat = '%y/%m/%d %R'
+      }
+    } # 17/03/16 21:52 YYMMDD-24HHmm (If for a filename use -Asfilename)
+    MM-DD-YY_HHmmss-f
+    {
+      $SplatFormat = @{
+        UFormat = '%D %R:%S'
+      }
+    } # 07/26/21 08:45:19 MMDDTT-HH:mm:ss  (If for a filename use -Asfilename)
+    tzOffset
+    {
+      if(-not $AsFilename)
+      {
+        $SplatFormat = @{
+          UFormat = '%y %b %d %R %Z'
+        }
+      }
+      else
+      {
+        $SplatFormat = @{
+          UFormat = '%y-%b-%d_%R(%Z)'
+        }
       }
     } # YYYY MMM DD - timezone offest
     Default
@@ -546,124 +554,142 @@ function Get-TimeStamp
     }
   }
     
-  $TimeStamp = Get-Date @SplatFormat
+  [string]$TimeStamp = Get-Date @SplatFormat
   
   if($AsFilename)
   {
     $TimeStamp = $TimeStamp.Replace('/','-').Replace(':','.').Replace(' ','_')
+    return $TimeStamp
+  }else{
+    Return $(New-Object psobject -Property @{TimeStamp = $TimeStamp})
   }
-  
-  return [String]$TimeStamp
 }
 
-function New-TimeStampFile 
+function New-File
 {
-      <#
+  <#
       .SYNOPSIS
-      Creates a file with a timestamp
+      Creates a file and increments the name "(1)" if the file exists.
 
       .DESCRIPTION
-      Allows you to create a file with a time stamp.  You provide the base name, extension, time/date stamp and if you want to append or overwrite the file.
+      Creates a file and increments the name, or allows you to append the base filename with a tag.
+      You provide the base name and extension the time/date stamp and if you want to append or overwrite the file.
+
+      This started as a way to build a filename that was timestamped.  It then morphed into creating the file and then incrementing it.
+      It has morphed again and no longer adds the date.  I found that the increment was valuable by itself, so the timestamp has been depricated as a default and changed to 'Tag'.
 
       .PARAMETER FileName
       Name of the file "Import-FileData.ps1"
 
-      .PARAMETER TimeStamp
-      However you want to create the timestame.
-      You can use a string, or "Get-Date -format"
+      .PARAMETER Tag
+      This is just what is added to the back of the file name.  You can use a string, or pass a variable. For a timestamp use the "Get-TimeStamp" (See Notes) function
+      Try $((Get-Date).Tostring('yyyyMMdd'))
 
-      Or you can use the "Get-TimeStamp", which was originally built into the script, but pulled out to be more widely used.
-      Get-TimeStamp -Format YYYY-MM-DD -AsFilename 
-      Excepted Formats: formats - YYYYMMDD, DDHHmmss, YYMMDD-24HHmm, YYYYMMDDHHmm, MM-DD-YY_HHmmss, YYYY-MM-DD, JJJHHmmss, DayOfYear, tzOffset
-      The formats with the "ss" on the end are for seconds, so eversecond you could create a new file.  
-      The formats with the "-f" on the end are the ones which have special characters and will need the "-AsFilename" to be used in a filename
+      You can use any format that is legal for a filename.  Using only "Get-Date" will fail.
+      
+      In truth, this is a string input so you can use "foo" or "bar" and it will work.  
+      Try $($env:username) or $($env:computername)
 
-      .PARAMETER Update
-      Looks for the file and does nothing if it exists.  You would use this with "Append".
-      If the file does not exist, then it will create it.
+      ***** Future plans will be to rename this to something like "tag" or "id"  ****
+      
+      .PARAMETER Amend
+      Looks for the file and does nothing if it exists.  Good for testing to ensure your output goes somewhere.
+      If the file does not exist, then it will create it. 
+      If the file exists, it is not changed, but the name is passed back to you
 
       .PARAMETER Overwrite
       Just simply creates a new file with the "-force" parameter.  
       It doesn't bother to check.  
 
-      .PARAMETER AddOn
+      .PARAMETER Increment
       This is default and is optional.
-      This looks for the file and if it exists, it creates a new file such as "Import-FileData-210727(1).ps1".  If you were to run it again, you would get "Import-FileData-210727(2).ps1"
-      If it doesn't exist, it creates the file as input.  "Import-FileData-210727.ps1"
+      This looks for the file and if it exists, it creates a new file such as "Import-FileData(1).ps1".  If you were to run it again, you would get "Import-FileData(2).ps1"
+      If it doesn't exist, it creates the file as input.  "Import-FileData.ps1"
 
       .EXAMPLE
-      New-TimestampFile  -FileName Import-FileData.ps1
+      New-File  -FileName Import-FileData.ps1
 
-      If Not Exist (Creates): Import-FileData-210727.ps1
-      If Exists x2 (Creates): Import-FileData-210727(3).ps1
+      If Not Exist (Creates): Import-FileData.ps1
+      If Exists x2 (Creates): Import-FileData(3).ps1
 
       
       .EXAMPLE
-      New-TimestampFile  -FileName Import-FileData.ps1 -TimeStamp 123456
+      New-File  -FileName Import-FileData.ps1 -Tag 123456
       
       If Not Exist (Creates): Import-FileData-123456.ps1
       If Exists x2 (Creates): Import-FileData-123456(3).ps1
       
       .EXAMPLE
-      $filename = 'Import-FileData.ps1' ; $timeStamp = Get-TimeStamp -Format YYYYMMDD -AsFilename ; New-TimestampFile $filename $timeStamp
+      $filename = 'Import-FileData.ps1' ; $timeStamp = Get-TimeStamp -Format YYYYMMDD -AsFilename ; New-File $filename $timeStamp
       
       If Not Exist (Creates): Import-FileData-20210727.ps1
 
       .EXAMPLE
-      $filename = 'Import-FileData.ps1' ; Get-TimeStamp -Format YYYYMMDD -AsFilename | New-TimestampFile $filename
+      $filename = 'Import-FileData.ps1' ; Get-TimeStamp -Format YYYYMMDD -AsFilename | New-File $filename
 
       If Not Exist (Creates): Import-FileData-20210727.ps1
 
-      New-TimestampFile  -FileName Import-FileData.ps1 -Update
+      .EXAMPLE
+      New-File  -FileName Import-FileData.ps1 -Amend
       
-      If Not Exist (Creates): Import-FileData-20210727.ps1
-      If Exist (No Change): Import-FileData-20210727.ps1
-
-
-      .EXAMPLE
-      New-TimestampFile  -FileName Import-FileData.ps1 -Overwrite
-      If Not Exist (Creates): Import-FileData-20210727.ps1
-      If Exists (Overwrites): Import-FileData-20210727.ps1
+      If Not Exist (Creates): Import-FileData.ps1
+      If Exist (No Change): Import-FileData.ps1
+      If the file exists, it is not changed, but the name is passed back to you
 
       .EXAMPLE
-      New-TimestampFile  -FileName Import-FileData.ps1 -AddOn
+      New-File  -FileName Import-FileData.ps1 -Overwrite
+      If Not Exist (Creates): Import-FileData.ps1
+      If Exists (Overwrites): Import-FileData.ps1
+
+      .EXAMPLE
+      New-File  -FileName Import-FileData.ps1 -Increment
       If Not Exist (Creates): Import-FileData-20210727.ps1
       If Exists (Increments num in "($i)"): Import-FileData-20210727(1).ps1
 
       .NOTES
-        REGEX Used: ^[A-Za-z0-9(?:()_ -]+\.[A-Za-z0-9]*$
+      REGEX Used: ^[A-Za-z0-9(?:()_ -]+\.[A-Za-z0-9]*$
 
-        Match a single character present in the list below [A-Za-z0-9(?:()_ -]
-            + matches the previous token between one and unlimited times, as many times as possible, giving back as needed (greedy)
-            A-Z matches a single character in the range between A (index 65) and Z (index 90) (case sensitive)
-            a-z matches a single character in the range between a (index 97) and z (index 122) (case sensitive)
-            0-9 matches a single character in the range between 0 (index 48) and 9 (index 57) (case sensitive)
-            (?:()_ - matches a single character in the list (?:)_ - (case sensitive)
+      Match a single character present in the list below [A-Za-z0-9(?:()_ -]
+      + matches the previous token between one and unlimited times, as many times as possible, giving back as needed (greedy)
+      A-Z matches a single character in the range between A (index 65) and Z (index 90) (case sensitive)
+      a-z matches a single character in the range between a (index 97) and z (index 122) (case sensitive)
+      0-9 matches a single character in the range between 0 (index 48) and 9 (index 57) (case sensitive)
+      (?:()_ - matches a single character in the list (?:)_ - (case sensitive)
         
-        \. matches the character . with index 4610 (2E16 or 568) literally (case sensitive)
+      \. matches the character . with index 4610 (2E16 or 568) literally (case sensitive)
         
-        Match a single character present in the list below [A-Za-z0-9]
-            * matches the previous token between zero and unlimited times, as many times as possible, giving back as needed (greedy)
-            A-Z matches a single character in the range between A (index 65) and Z (index 90) (case sensitive)
-            a-z matches a single character in the range between a (index 97) and z (index 122) (case sensitive)
-            0-9 matches a single character in the range between 0 (index 48) and 9 (index 57) (case sensitive)
+      Match a single character present in the list below [A-Za-z0-9]
+      * matches the previous token between zero and unlimited times, as many times as possible, giving back as needed (greedy)
+      A-Z matches a single character in the range between A (index 65) and Z (index 90) (case sensitive)
+      a-z matches a single character in the range between a (index 97) and z (index 122) (case sensitive)
+      0-9 matches a single character in the range between 0 (index 48) and 9 (index 57) (case sensitive)
         
-        $ asserts position at the end of a line
+      $ asserts position at the end of a line
+
+      Regarding the Get-TimeStamp:
+      The "Get-TimeStamp", which was originally built into the script, but pulled out to be more widely used.
+      Get-TimeStamp -Format YYYY-MM-DD -AsFilename 
+      Excepted Formats: formats - YYYYMMDD, DDHHmmss, YYMMDD-24HHmm, YYYYMMDDHHmm, MM-DD-YY_HHmmss, YYYY-MM-DD, JJJHHmmss, DayOfYear, tzOffset
+      The formats with the "ss" on the end are for seconds, so every second you could create a new file.  
+      The formats with the "-f" on the end are the ones which have special characters and will need the "-AsFilename" to be used in a filename
 
 
       .INPUTS
       String
 
+      .OUTPUTS
+      String as filename (default) or filepath
+
   #>
 
-  #[cmdletbinding(DefaultParameterSetName = 'FileName')]
+  #[cmdletbinding(DefaultParameterSetName = 'FileName Set')]
   [cmdletbinding()]
   param
   (
-    [Parameter(Mandatory,Position = 0,ValueFromPipeline, ValueFromPipelineByPropertyName,HelpMessage = 'File name "Fullname.extension"')]
-    [Alias('FullName')]
+    [Parameter(Mandatory,Position = 0,ValueFromPipeline, ValueFromPipelineByPropertyName,HelpMessage = 'File name "Fullname.extension" | example: test.txt')]
+    [Alias('file')]
     [ValidateScript({
-          $ptrn = '/^[A-Za-z0-9(?:()_ -]+\.[A-Za-z0-9]*$/gm'
+          $ptrn = [regex]'^[A-Za-z0-9(?:()_ -]+\.[A-Za-z0-9]*$'
           If($_ -match $ptrn)
           {
             $true
@@ -672,35 +698,51 @@ function New-TimeStampFile
           {
             Throw 'Filename requires "." example: test.txt'
           }
-    })][String]$Filename,
+    })]
+    [String]$Filename,
     [Parameter(Mandatory = $false,Position = 1,ValueFromPipeline, ValueFromPipelineByPropertyName)]
-    [String]$TimeStamp = $(Get-TimeStamp -Format YYYYMMDD -AsFilename ), #$(Get-Date -UFormat '%y%m%d_%H%M%S')
-    [Parameter(Mandatory,Position = 2,HelpMessage = 'Update or Append file',ParameterSetName = 'Update')]
-    [Switch]$Update,
+    [String]$Tag, 
+    [Parameter(Mandatory,Position = 2,HelpMessage = 'Amend or Append file',ParameterSetName = 'Amend')]
+    [Switch]$Amend,
     [Parameter(Mandatory,Position = 2,HelpMessage = 'Overwrite or Delete and recreate file',ParameterSetName = 'Overwrite')]
     [Switch]$Overwrite,
-    [Parameter(Mandatory = $false,Position = 2,HelpMessage = 'Creates new file with "(1)"',ParameterSetName = 'Addon')]
-    [Switch]$AddOn = $true
+    [Parameter(Mandatory = $false,Position = 2,HelpMessage = 'Creates new file with "(1)"',ParameterSetName = 'Increment')]
+    [Switch]$Increment = $true,
+    [Parameter(Mandatory = $false,HelpMessage = 'Returns the filename or filepath.')]
+    [ValidateSet('Filename','Filepath')] 
+    [String]$Return = 'Filename'
        
   )
+  #Parameter Notes
+  # The regex line sometimes is broken when editing: This is the correct syntex: $ptrn = [regex]'^[A-Za-z0-9(?:()_ -]+\.[A-Za-z0-9]*$'
+  # Timestamp option - $(Get-Date -UFormat '%y%m%d') 
  
+  $ItemType = 'File'
+  $dot = '.'
   $SplatFile = @{}
 
-  $FileBaseName = $FileName.Split('.')[0]
-  $fileExt = ('.{0}' -f $FileName.Split('.')[1])
+  $FileBaseName = $Filename.Split($dot)[0]
+  $fileExt = ('.{0}' -f $Filename.Split($dot)[1])
   
-  $DatedName = ('{0}-{1}' -f $FileBaseName, $TimeStamp)
+  if($Tag)
+  {
+    $DatedName = ('{0}-{1}' -f $FileBaseName, $Tag)
+  }
+  else
+  {
+    $DatedName = $FileBaseName
+  }
   $NewFile = ('{0}{1}' -f $DatedName, $fileExt)
 
   Switch ($true){
-    $Update
+    $Amend
     {
-      Write-Verbose -Message 'update'
+      Write-Verbose -Message 'Amend'
       if(-not (Test-Path -Path $NewFile))
       {
         $SplatFile = @{
           Path     = $NewFile
-          ItemType = 'File'
+          ItemType = $ItemType
           Force    = $false
         }
         $null = New-Item @SplatFile
@@ -712,7 +754,7 @@ function New-TimeStampFile
       Write-Verbose -Message 'Overwrite'
       $SplatFile = @{
         Path     = $NewFile
-        ItemType = 'File'
+        ItemType = $ItemType
         Force    = $true
       }
       $null = New-Item @SplatFile
@@ -720,7 +762,7 @@ function New-TimeStampFile
     
     Default 
     {
-      $i = 0
+      $i = 1
       if(Test-Path -Path $NewFile)
       {
         do 
@@ -731,16 +773,25 @@ function New-TimeStampFile
         while (Test-Path -Path $NewFile)
       }
         
-      Write-Verbose -Message 'Addon'
+      Write-Verbose -Message 'Increment'
 
       $SplatFile = @{
         Path     = $NewFile
-        ItemType = 'File'
+        ItemType = $ItemType
         Force    = $false
       }
       $null = New-Item @SplatFile
     }
 
+  }
+
+  if($Return -eq 'Filename')
+  {
+    Return $NewFile
+  }
+  elseif($Return -eq 'Filepath')
+  {
+    Return (Get-Item -Path $NewFile).FullName
   }
 }
 
@@ -752,7 +803,7 @@ Export-ModuleMember -Function Get-CurrentLineNumber
 Export-ModuleMember -Function Set-SafetySwitch
 Export-ModuleMember -Function Compare-FileHash
 Export-ModuleMember -Function Import-FileData  
-Export-ModuleMember -Function New-TimestampFile 
+Export-ModuleMember -Function New-File 
 Export-ModuleMember -Function Get-TimeStamp
 #>
 
