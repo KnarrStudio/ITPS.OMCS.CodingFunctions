@@ -2,17 +2,17 @@
 {
   <#
       .Synopsis
-      Generates a file hash and compares against a known hash
+      Compares against a known hash
       .Description
-      Generates a file hash and compares against a known hash.
+      The original hash that you are expecting it to be the same (Normally provided by website at download) compared against the hash on the file.
       .Parameter File
-      Mandatory. File name to generate hash. Example file.txt
+      Mandatory. File name to read the hash. Example: file.txt
       .Parameter Hash
       Mandatory. Known hash. Example 186F55AC6F4D2B60F8TB6B5485080A345ABA6F82
       .Parameter Algorithm
       Mandatory. Algorithm to use when generating the hash. Example SHA1
       .Notes
-      Version: 1.0
+      Version: 2.0
       History:
       .Example
       Compare-FileHash -fileName file.txt -Hash  186F5AC26F4E9B12F861485485080A30BABA6F82 -Algorithm SHA1
