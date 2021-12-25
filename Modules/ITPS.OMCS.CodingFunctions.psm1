@@ -569,7 +569,7 @@ function New-File
 {
   <#
       .SYNOPSIS
-      Creates a file and increments the name "(1)" if the file exists.
+      Creates a file and increments the name "(1),(2),(3)..." if the file exists.
 
       .DESCRIPTION
       Creates a file and increments the name, or allows you to append the base filename with a tag.
@@ -587,10 +587,9 @@ function New-File
 
       You can use any format that is legal for a filename.  Using only "Get-Date" will fail.
       
-      In truth, this is a string input so you can use "foo" or "bar" and it will work.  
+      This is a string input so you can use "foo" or "bar" and it will work.  
       Try $($env:username) or $($env:computername)
 
-      ***** Future plans will be to rename this to something like "tag" or "id"  ****
       
       .PARAMETER Amend
       Looks for the file and does nothing if it exists.  Good for testing to ensure your output goes somewhere.
@@ -647,24 +646,7 @@ function New-File
       If Exists (Increments num in "($i)"): Import-FileData-20210727(1).ps1
 
       .NOTES
-      REGEX Used: ^[A-Za-z0-9(?:()_ -]+\.[A-Za-z0-9]*$
-
-      Match a single character present in the list below [A-Za-z0-9(?:()_ -]
-      + matches the previous token between one and unlimited times, as many times as possible, giving back as needed (greedy)
-      A-Z matches a single character in the range between A (index 65) and Z (index 90) (case sensitive)
-      a-z matches a single character in the range between a (index 97) and z (index 122) (case sensitive)
-      0-9 matches a single character in the range between 0 (index 48) and 9 (index 57) (case sensitive)
-      (?:()_ - matches a single character in the list (?:)_ - (case sensitive)
-        
-      \. matches the character . with index 4610 (2E16 or 568) literally (case sensitive)
-        
-      Match a single character present in the list below [A-Za-z0-9]
-      * matches the previous token between zero and unlimited times, as many times as possible, giving back as needed (greedy)
-      A-Z matches a single character in the range between A (index 65) and Z (index 90) (case sensitive)
-      a-z matches a single character in the range between a (index 97) and z (index 122) (case sensitive)
-      0-9 matches a single character in the range between 0 (index 48) and 9 (index 57) (case sensitive)
-        
-      $ asserts position at the end of a line
+      
 
       Regarding the Get-TimeStamp:
       The "Get-TimeStamp", which was originally built into the script, but pulled out to be more widely used.
@@ -678,40 +660,43 @@ function New-File
       String
 
       .OUTPUTS
-      String as filename (default) or filepath
+      File with name basesd in input
 
   #>
 
-  #[cmdletbinding(DefaultParameterSetName = 'FileName Set')]
-  [cmdletbinding()]
+  [cmdletbinding(DefaultParameterSetName = 'FileName Set')]
+  #[cmdletbinding()]
   param
   (
-    [Parameter(Mandatory,Position = 0,ValueFromPipeline, ValueFromPipelineByPropertyName,HelpMessage = 'File name "Fullname.extension" | example: test.txt')]
+    [Parameter(Mandatory,Position = 0,ValueFromPipeline, ValueFromPipelineByPropertyName,HelpMessage = 'File name "Fullname.extension" | example: test.txt',ParameterSetName = 'FileName Set')]
+    [Parameter(Mandatory,Position = 0,ValueFromPipeline, ValueFromPipelineByPropertyName,HelpMessage = 'File name "Fullname.extension" | example: test.txt',ParameterSetName = 'Increment')]
+    [Parameter(Mandatory,Position = 0,ValueFromPipeline, ValueFromPipelineByPropertyName,HelpMessage = 'File name "Fullname.extension" | example: test.txt',ParameterSetName = 'Overwrite')]
+    [Parameter(Mandatory,Position = 0,ValueFromPipeline, ValueFromPipelineByPropertyName,HelpMessage = 'File name "Fullname.extension" | example: test.txt',ParameterSetName = 'Amend')]
     [Alias('file')]
-    [ValidateScript({
-          $ptrn = [regex]'^[A-Za-z0-9(?:()_ -]+\.[A-Za-z0-9]*$'
-          If($_ -match $ptrn)
-          {
-            $true
-          }
-          Else
-          {
-            Throw 'Filename requires "." example: test.txt'
-          }
-    })]
     [String]$Filename,
-    [Parameter(Mandatory = $false,Position = 1,ValueFromPipeline, ValueFromPipelineByPropertyName)]
+    
+    [Parameter(Mandatory = $false,Position = 1,ValueFromPipeline, ValueFromPipelineByPropertyName,ParameterSetName = 'FileName Set')]
+    [Parameter(Mandatory = $false,Position = 1,ValueFromPipeline, ValueFromPipelineByPropertyName,ParameterSetName = 'Increment')]
+    [Parameter(Mandatory = $false,Position = 1,ValueFromPipeline, ValueFromPipelineByPropertyName,ParameterSetName = 'Overwrite')]
+    [Parameter(Mandatory = $false,Position = 1,ValueFromPipeline, ValueFromPipelineByPropertyName,ParameterSetName = 'Amend')]
     [String]$Tag, 
-    [Parameter(Mandatory,Position = 2,HelpMessage = 'Amend or Append file',ParameterSetName = 'Amend')]
+    
+    [Parameter(Mandatory = $true,Position = 2,HelpMessage = 'Amend or Append file',ParameterSetName = 'Amend')]
     [Switch]$Amend,
-    [Parameter(Mandatory,Position = 2,HelpMessage = 'Overwrite or Delete and recreate file',ParameterSetName = 'Overwrite')]
-    [Switch]$Overwrite,
+    
     [Parameter(Mandatory = $false,Position = 2,HelpMessage = 'Creates new file with "(1)"',ParameterSetName = 'Increment')]
     [Switch]$Increment = $true,
+    
+    [Parameter(Mandatory = $true,Position = 2,HelpMessage = 'Overwrite or Delete and recreate file',ParameterSetName = 'Overwrite')]
+    [Switch]$Overwrite,
+    
     [Parameter(Mandatory = $false,HelpMessage = 'Returns the filename or filepath.')]
     [ValidateSet('Filename','Filepath')] 
+    [Parameter(ParameterSetName = 'FileName Set')]
+    [Parameter(ParameterSetName = 'Increment')]
+    [Parameter(ParameterSetName = 'Overwrite')]
+    [Parameter(ParameterSetName = 'Amend')]
     [String]$Return = 'Filename'
-       
   )
   #Parameter Notes
   # The regex line sometimes is broken when editing: This is the correct syntex: $ptrn = [regex]'^[A-Za-z0-9(?:()_ -]+\.[A-Za-z0-9]*$'
@@ -721,16 +706,19 @@ function New-File
   $dot = '.'
   $SplatFile = @{}
 
-  $FileBaseName = $Filename.Split($dot)[0]
-  $fileExt = ('.{0}' -f $Filename.Split($dot)[1])
-  
+  if($Filename.Contains($dot))
+  {
+    $fileExt = ('{0}{1}' -f $dot, $Filename.Split($dot)[-1])
+    $fileBaseName = $Filename.Replace($fileExt,'')
+  }
+
   if($Tag)
   {
-    $DatedName = ('{0}-{1}' -f $FileBaseName, $Tag)
+    $DatedName = ('{0}-{1}' -f $fileBaseName, $Tag)
   }
   else
   {
-    $DatedName = $FileBaseName
+    $DatedName = $fileBaseName
   }
   $NewFile = ('{0}{1}' -f $DatedName, $fileExt)
 
