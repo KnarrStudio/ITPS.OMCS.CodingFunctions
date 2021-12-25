@@ -143,6 +143,9 @@
   {
     $fileExt = ('{0}{1}' -f $dot, $Filename.Split($dot)[-1])
     $fileBaseName = $Filename.Replace($fileExt,'')
+  }else{
+  $fileBaseName = $Filename
+  $fileExt =''
   }
 
   if($Tag)
