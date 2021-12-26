@@ -438,50 +438,69 @@ function Get-TimeStamp
       Simple date time stamp, for the person that is tired of looking up format syntax
 
       .DESCRIPTION
-      Creates a function around the "Get-Date -Uformat" to make getting standard dates/times.
+      Creates a function around the "Get-Date -Uformat" to make common date/time stamps .
       Use the following formats:
-      20170316 = YYYYMMDD
-      16214855 = DDHHmmss
-      17/03/16 21:52 = YYMMDD_HHmm
-      1703162145 = YYMMDDHHmm
-      07/26/21 08:45:19 = MMDDTT-HH:mm:ss
-      03/16/2018 = Default
+          20170316 = YYYYMMDD
+          16214855 = DDHHmmss
+          17/03/16 21:52 = YYMMDD_HHmm
+          1703162145 = YYMMDDHHmm
+          07/26/21 08:45:19 = MMDDTT-HH:mm:ss
+          03/16/2018 = Default
 
       .PARAMETER Format
-      Used to select the built in formats
-      1: YYMMDDhhmm  (Two digit year followed by two digit month day hours minutes.  This is good for the report that runs more than once a day)  -example 1703162145
-      2: YYYYMMDD  (Four digit year two digit month day.  This is for the once a day report)  -example 20170316 
-      3: jjjhhmmss (Julian day then hours minutes seconds.  Use this when you are testing, troubleshooting or creating.  You won't have to worry about overwrite or append errors)  -example 160214855 
-      4: YY-MM-DD_hh.mm  (Two digit year-month-day _ Hours:Minutes)  -example 17-03-16_21.52
-      5: yyyy-mm-ddThour.min.sec.milsec-tzOffset (Four digit year two digit month and day "T" starts the time section two digit hour minute seconds then milliseconds finish with the offset from UTC -example 2019-04-24T07:23:51.3195398-04:00
-      
+      YYYYMMDD           - Four digit year, two digit Month and day -example: 20211225 (Christmas 2021) 
+                           This is for the once a day report
 
-      .PARAMETER AsFilename
-      In the event you want to use the date/time stamp as a filename, it replaces " "(space), ":", and "/" charectors with file friendly ones.
-      " " becomes "_"
-      ":" becomes "."
-      "/" becomes "-"
+      HHmmss             - Hour, minute, seconds -example: 042000 (today @ 4:20:00) 
+
+      YYYYMMDDHHmm       - Four digit year, two digit Month, Day, Hour, Minute -example: 202112250420 (Christmas 2021 @ 4:20) 
+                           This is good for the report that runs more than once a day   
+
+      YYYY-MM-DD         - Four digit year, two digit Month and day -example: 2021-12-25 (Christmas 2021) 
+                           Once a day report with some formatting, but still able to be used as a filename
+
+      JJJHHmmss          - Julian Date, Hour, Minutes and Seconds -example: 359042000 (Christmas 2021 @ 4:20:00) 
+                           Use this when you are testing, troubleshooting or creating.  You won't have to worry about overwrite or append errors)
+
+      DayOfYear          - Julian Date -example: 360 (Boxing Day 2021) 
+
+      MM-DD-YY_HH.mm.ss  - Two digit year-month-day _ Hours:Minutes:Seconds -example: 12-26-21_07.54.50
+                           Filename friendly
+
+      MM/DD/YY HH:mm:ss  - Two digit year-month-day _ Hours:Minutes -example: 12/26/21 07:53:38
+
+      YY-MM-DD_24HH.mm   - Two digit year-month-day _ 24Hour:Minutes -example: 21-12-26_07.58
+                           Filename friendly
+
+      YY/MM/DD 24HH:mm   - Two digit year-month-day _ 24Hous:Minutes -example: 21/12/26 07:58 
+
+      tzOffset           - Two digit year AbrvMonth Day 24Hous:Minutes Timezone offset -example: 21 Dec 25 16:20 -06 (Christmas 2021 @ 4:20pm CST) 
+
+      tzOffset-f         - Two digit year AbrvMonth Day 24Hous:Minutes Timezone offset -example: 21-Dec-25_16.20(-06) (Christmas 2021 @ 4:20pm CST) 
+                           Filename friendly
+
 
       .EXAMPLE
-      Get-TimeStamp -Format MMDDYY-HHmmss 
-      Returns - 07/26/21 09:32:25
+      Get-TimeStamp -Format MM/DD/YY HH:mm:ss 
+      Returns - 12/26/21 07:53:38
 
 
       .EXAMPLE
-      Get-TimeStamp -Format MMDDYY-HHmmss -AsFilename
-      Returns - 07-26-21_09.32.25
+      Get-TimeStamp -Format YY-MM-DD_24HH.mm
+      Returns - 21-12-26_07.58
 
       .NOTES
-      Place additional notes here.
+      'YYYYMMDD','HHmmss','YYYYMMDDHHmm','YYYY-MM-DD','JJJHHmmss','DayOfYear','MM-DD-YY_HH.mm.ss','MM/DD/YY HH:mm:ss','YY-MM-DD_24HH.mm','YY/MM/DD 24HH:mm','tzOffset','tzOffset-f'
+
 
   #>
 
+  [cmdletbinding(DefaultParameterSetName = 'FileName Set')]
   param
   (
-    [Parameter(Mandatory,HelpMessage = 'Use the following formats: YYYYMMDD, DDHHmmss, YYMMDD-24HHmm, YYYYMMDDHHmm, MM-DD-YY_HHmmss, YYYY-MM-DD, JJJHHmmss, DayOfYear, tzOffset')]
-    [ValidateSet('YYYYMMDD', 'DDHHmmss', 'YYYYMMDDHHmm','YYYY-MM-DD', 'JJJHHmmss', 'DayOfYear', 'MM-DD-YY_HHmmss-f', 'YYMMDD-24HHmm-f', 'tzOffset')] 
-    [String]$Format,
-    [Switch]$AsFilename
+    [Parameter(Mandatory,Position = 0,HelpMessage = 'Use the following formats: "YYYYMMDD", "HHmmss" or for more formats "Help".',ParameterSetName = 'FileName Set')]
+    [ValidateSet('YYYYMMDD','HHmmss','YYYYMMDDHHmm','YYYY-MM-DD','JJJHHmmss','DayOfYear','MM-DD-YY_HH.mm.ss','MM/DD/YY HH:mm:ss','YY-MM-DD_24HH.mm','YY/MM/DD 24HH:mm','tzOffset','tzOffset-f','Help')] 
+    [String]$Format
   )
   
   switch ($Format) {
@@ -491,12 +510,12 @@ function Get-TimeStamp
         UFormat = '%Y%m%d'
       }
     } # 20170316 YYYYMMDD
-    DDHHmmss
+    HHmmss
     {
       $SplatFormat = @{
-        UFormat = '%b%d%H%M%S'
+        UFormat = '%H%M%S'
       }
-    } # Mar16214855 MMMDDHHmmss  
+    } # 214855 HHmmss  
     YYYYMMDDHHmm
     {
       $SplatFormat = @{
@@ -514,40 +533,55 @@ function Get-TimeStamp
       $SplatFormat = @{
         UFormat = '%j%H%M%S'
       }
-    } # 207094226 JJJHHmmss Julion Day
+    } # 207094226 JJJHHmmss Julion Day hours minutes
     DayOfYear
     {
       $SplatFormat = @{
         UFormat = '%j'
       }
     } # Day of Year
-    YYMMDD-24HHmm-f
+    MM-DD-YY_HH.mm
     {
       $SplatFormat = @{
-        UFormat = '%y/%m/%d %R'
+        UFormat = '%m-%d-%Y_%H.%M'
       }
-    } # 17/03/16 21:52 YYMMDD-24HHmm (If for a filename use -Asfilename)
-    MM-DD-YY_HHmmss-f
+    } # 12-26-2021_10.42.36 (MM-DD-YY_HH.mm)
+    'MM/DD/YY HH:mm:ss'
+    {
+      $SplatFormat = @{
+        UFormat = '%m/%d/%y %r'
+      }
+    } # 'MM/DD/YY HH:mm:ss'
+    'MM/DD/YY 24HH:mm:ss'
     {
       $SplatFormat = @{
         UFormat = '%D %R:%S'
+      } # 'MM/DD/YY 24HH:mm:ss'
+    } 
+    YYYY-MM-DD_24HH.mm
+    {
+      $SplatFormat = @{
+        UFormat = '%Y-%m-%d_%H.%M'
       }
-    } # 07/26/21 08:45:19 MMDDTT-HH:mm:ss  (If for a filename use -Asfilename)
+    }
     tzOffset
     {
-      if(-not $AsFilename)
-      {
-        $SplatFormat = @{
-          UFormat = '%y %b %d %R %Z'
-        }
+      $SplatFormat = @{
+        UFormat = '%y %b %d %R %Z'
       }
-      else
-      {
-        $SplatFormat = @{
-          UFormat = '%y-%b-%d_%R(%Z)'
-        }
+    }
+
+    tzOffset-f
+    {
+      $SplatFormat = @{
+        UFormat = '%y-%b-%d_%R(%Z)'
       }
     } # YYYY MMM DD - timezone offest
+    Help
+    {
+      Get-Help -Name Get-timeStamp -Parameter Format
+      Return
+    }
     Default
     {
       $SplatFormat = @{}
@@ -555,15 +589,20 @@ function Get-TimeStamp
   }
     
   [string]$TimeStamp = Get-Date @SplatFormat
-  
-  if($AsFilename)
-  {
-    $TimeStamp = $TimeStamp.Replace('/','-').Replace(':','.').Replace(' ','_')
-    return $TimeStamp
-  }else{
-    Return $(New-Object psobject -Property @{TimeStamp = $TimeStamp})
-  }
+  return $TimeStamp
 }
+<#
+    function Get-TimeStampToday 
+    {
+    Get-TimeStamp -Format YYYYMMDD
+    }
+    function Get-TimeStampNow 
+    {
+    Get-TimeStamp -Format HHmmss
+    }
+    Set-Alias -Name TimeStamp -Value Get-TimeStampNow
+    Set-Alias -Name DayStamp -Value Get-TimeStampToday
+#>
 
 function New-File
 {
