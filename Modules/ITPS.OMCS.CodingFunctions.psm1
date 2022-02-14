@@ -825,16 +825,15 @@ function New-File
   }
 }
 
-
 <#
-Export-ModuleMember -Function Send-eMail
 Export-ModuleMember -Function Get-Versions
 Export-ModuleMember -Function Get-CurrentLineNumber
 Export-ModuleMember -Function Set-SafetySwitch
 Export-ModuleMember -Function Compare-FileHash
 Export-ModuleMember -Function Import-FileData  
-Export-ModuleMember -Function New-File 
+Export-ModuleMember -Function Send-eMail
 Export-ModuleMember -Function Get-TimeStamp
+Export-ModuleMember -Function New-File 
 #>
 
 
