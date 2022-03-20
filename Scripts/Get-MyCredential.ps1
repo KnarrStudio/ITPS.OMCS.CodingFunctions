@@ -56,7 +56,7 @@ Begin
   }
   $LastWriteTime = (Get-ChildItem -Path $credentialPath).LastWriteTime
 
-  Script:function Set-MyCredential
+  function Script:Set-MyCredential
   {
     param
     (
