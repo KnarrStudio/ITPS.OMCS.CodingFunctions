@@ -1,53 +1,81 @@
-﻿<#
-    .Synopsis
-    Short description
-    .DESCRIPTION
-    Long description
-    .EXAMPLE
-    Example of how to use this cmdlet
-    .EXAMPLE
-    Another example of how to use this cmdlet
-#>
-function Get-MyCredential
-{
-  [CmdletBinding(SupportsShouldProcess=$true, 
-                  PositionalBinding=$false,
-                  HelpUri = 'http://www.microsoft.com/',
-                  ConfirmImpact='Medium')]
-  [Alias('gmc')]
-  [OutputType([int])]
-  Param
-  (
-    # Param1 help description
-    [Parameter(Mandatory = $true,
-        ValueFromPipelineByPropertyName = $true,
-    Position = 0)]
-    $Param1,
-
-    # Param2 help description
-    [int]
-    $Param2
-  )
-
-  Begin
-  {
-    Get-LocalUser $env:USERNAME | Select-Object -Property passwordlastset 
+﻿#requires -Version 3.0 -Modules Microsoft.PowerShell.LocalAccounts
+<#
+    .SYNOPSIS
+    Stores and retrieves credentials from a file. 
     
-    # save PSCredential in the file
+    .DESCRIPTION
+    Stores your credentials in a file and retreives them when you need them.
+    Allows you to speed up your scripts.  
+    It looks at when your password was last reset and forces an update to the file if the dates don't match.  
+    Because this only works with the specific user logged into a specific computer the name of the file will alway have both bits of information in it.
+    
+    .PARAMETER Reset
+    Allows you to force a password change.
 
-    $WriteTime = (Get-ChildItem -Path ".\myCred_${env:USERNAME}_${env:COMPUTERNAME}.xml").LastWriteTime
+    .PARAMETER Path
+    Path to the credential file, if not in current directory.
 
-    if($WriteTime -gt $(Get-Date))
-    {
-      $credential = Get-Credential
-      $credential | Export-Clixml -Path ".\myCred_${env:USERNAME}_${env:COMPUTERNAME}.xml"
-    }
-    Import-Clixml -Path ".\myCred_${env:USERNAME}_${env:COMPUTERNAME}.xml"
-  }
-  Process
+    .EXAMPLE
+    Get-MyCredential
+
+    .EXAMPLE
+    Get-MyCredential -Reset -Path Value
+    Allows you to change (reset) the password in the password file located at the path.  Then returns the credentials
+
+    .NOTES
+    Place additional notes here.
+
+    .LINK
+    'https://github.com/KnarrStudio/ITPS.OMCS.CodingFunctions/blob/master/Scripts/Get-MyCredential.ps1'
+
+    .INPUTS
+    String
+
+    .OUTPUTS
+    Object
+#>
+[CmdletBinding(SupportsShouldProcess, PositionalBinding = $false, ConfirmImpact = 'Medium',
+HelpUri = 'https://github.com/KnarrStudio/ITPS.OMCS.CodingFunctions/blob/master/Scripts/Get-MyCredential.ps1')]
+[Alias('gmc')]
+[OutputType([Object])]
+Param
+(
+  [Parameter(Mandatory = $false,Position = 0)]
+  [Switch]$Reset,
+  [Parameter(Mandatory = $false,Position = 1)]
+  [String]$FolderPath = "$env:USERPROFILE\.PsCredentials"
+)
+Begin
+{
+  $PasswordLastSet = (Get-LocalUser -Name ${env:USERNAME}).PasswordLastSet #| Select-Object -Property PasswordLastSet 
+  $credentialPath = ('{0}\myCred_{1}_{2}.xml' -f $FolderPath, ${env:USERNAME}, ${env:COMPUTERNAME})
+    
+  if(-not (Test-Path -Path $credentialPath))
   {
+    $null = New-Item -Path $credentialPath -ItemType File -Force
   }
-  End
+  $LastWriteTime = (Get-ChildItem -Path $credentialPath).LastWriteTime
+
+  Script:function Set-MyCredential
   {
+    param
+    (
+      [Parameter(Mandatory = $true)]
+      [string]$credentialPath
+    )
+    $credential = Get-Credential
+    $credential | Export-Clixml -Path $credentialPath -Force
+  }    
+}
+Process
+{
+  if(($Reset -eq $true) -or ($LastWriteTime -lt $PasswordLastSet))
+  {
+    Set-MyCredential -credentialPath $credentialPath
   }
+  $creds = Import-Clixml -Path $credentialPath
+}
+End
+{
+  Return $creds
 }
