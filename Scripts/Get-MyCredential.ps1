@@ -63,7 +63,7 @@ Begin
       [Parameter(Mandatory = $true)]
       [string]$credentialPath
     )
-    $credential = Get-Credential
+    $credential = Get-Credential -Message 'Credentials to Save'
     $credential | Export-Clixml -Path $credentialPath -Force
   }    
 }
