@@ -4,9 +4,9 @@
 Write-Host -Object $((Get-Item (Get-Location).Path).Parent.Name)
 
 $Major = 1     # Changes that cause the code to operate differently or large rewrites
-$minor = 3    # When an individual module or function is added
+$minor = 4    # When an individual module or function is added
 $Patch = 0     # Small updates to a function or module.  Note: This goes to zero when minor is updated
-$Manifest = 16  # For each manifest module update
+$Manifest = 17  # For each manifest module update
 
 
 $SplatSettings = @{
@@ -19,7 +19,7 @@ $SplatSettings = @{
   Description       = 'A few functions that I use often to code with'
   PowerShellVersion = '4.0'
   NestedModules     = @('.\Modules\ITPS.OMCS.CodingFunctions.psm1', '.\Modules\ITPS.OMCS.MenuFunctions.psm1')
-  FunctionsToExport = 'Get-Versions', 'Get-CurrentLineNumber', 'Set-SafetySwitch', 'Compare-FileHash', 'Import-FileData', 'Send-eMail', 'Get-TimeStamp', 'New-File'
+  FunctionsToExport = 'Get-Versions', 'Get-CurrentLineNumber', 'Set-SafetySwitch', 'Compare-FileHash', 'Import-FileData', 'Send-eMail', 'Get-TimeStamp', 'New-File','Get-MyCredential'
   CmdletsToExport   = '*'
   ReleaseNotes      = 'Added the Menu Examples. "Show-MenuFunctions"'
 }
