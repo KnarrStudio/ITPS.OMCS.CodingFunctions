@@ -16,12 +16,12 @@ $SplatSettings = @{
   Author            = 'Erik'
   CompanyName       = 'Knarr Studio'
   ModuleVersion     = '{0}.{1}.{2}.{3}' -f $Major, $minor, $Patch, $Manifest
-  Description       = 'A few functions that I use often to code with'
+  Description       = 'A sort of Function Library'
   PowerShellVersion = '4.0'
   NestedModules     = @('.\Modules\ITPS.OMCS.CodingFunctions.psm1', '.\Modules\ITPS.OMCS.MenuFunctions.psm1')
-  FunctionsToExport = 'Get-Versions', 'Get-CurrentLineNumber', 'Set-SafetySwitch', 'Compare-FileHash', 'Import-FileData', 'Send-eMail', 'Get-TimeStamp', 'New-File','Get-MyCredential'
+  FunctionsToExport = 'Get-Versions', 'Get-CurrentLineNumber', 'Set-SafetySwitch', 'Compare-FileHash', 'Send-eMail', 'Get-TimeStamp', 'New-File','Get-MyCredential'
   CmdletsToExport   = '*'
-  ReleaseNotes      = "Added the 'New-File','Get-MyCredential' functions.  Corrected a syntax error in 1.4.1.18"
+  ReleaseNotes      = "Removed 'Import-FileData'"
 }
 
 New-ModuleManifest @SplatSettings
