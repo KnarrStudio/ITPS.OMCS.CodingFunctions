@@ -5,8 +5,8 @@ Write-Host -Object $((Get-Item (Get-Location).Path).Parent.Name)
 
 $Major = 1     # Changes that cause the code to operate differently or large rewrites
 $minor = 4    # When an individual module or function is added
-$Patch = 0     # Small updates to a function or module.  Note: This goes to zero when minor is updated
-$Manifest = 17  # For each manifest module update
+$Patch = 1     # Small updates to a function or module.  Note: This goes to zero when minor is updated
+$Manifest = 18  # For each manifest module update
 
 
 $SplatSettings = @{
@@ -21,7 +21,7 @@ $SplatSettings = @{
   NestedModules     = @('.\Modules\ITPS.OMCS.CodingFunctions.psm1', '.\Modules\ITPS.OMCS.MenuFunctions.psm1')
   FunctionsToExport = 'Get-Versions', 'Get-CurrentLineNumber', 'Set-SafetySwitch', 'Compare-FileHash', 'Import-FileData', 'Send-eMail', 'Get-TimeStamp', 'New-File','Get-MyCredential'
   CmdletsToExport   = '*'
-  ReleaseNotes      = 'Added the Menu Examples. "Show-MenuFunctions"'
+  ReleaseNotes      = "Added the 'New-File','Get-MyCredential' functions.  Corrected a syntax error in 1.4.1.18"
 }
 
 New-ModuleManifest @SplatSettings
