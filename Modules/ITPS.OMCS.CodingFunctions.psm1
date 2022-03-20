@@ -231,32 +231,37 @@ Function Compare-FileHash
   #Write-Output -InputObject $output
 }
 
+<#
 function Import-FileData
 {
   <#
       .SYNOPSIS
-      A function that will help import files
+      A function to simplify importing txt, csv and json files
 
       .DESCRIPTION
-      Add a more complete description of what the function does.
+      Playing around with file imports to see if there was a simplify the code. 
+      I was working with these files and it seemed messy. I wanted to be able to pass & return the file. 
+      It led to this function which works well with txt, csv and json files.  
+      It was handy in the one script I was writing at the time, but I don't think it will ever become more then what it is.
 
       .PARAMETER fileName
       Filename and path of the file you need to import data from
 
       .PARAMETER FileType
-      File type to be imported, but really how you want it to be handled.  i.e.
-      Basically how you want to manage the import.  In otherwords, a 'txt' file could be imported as a csv.
+      File type to be imported, but really how you want it to be handled.  
+      In otherwords, a 'txt' file could be imported as a csv so you would use the csv type.  
+      It works the other way to in the event you want to see the raw data, just use txt.
 
       .EXAMPLE
       Import-FileData -fileName Value -FileType Value
     
-  #>
+  # >
 
 
   param(
     [Parameter(Mandatory,ValueFromPipeline,ValueFromPipelineByPropertyName,HelpMessage = 'Name of file to be imported.')]
     [String]$fileName,
-    [Parameter(Mandatory,HelpMessage = 'File type to be imported, but really how you want it to be handled.  ie txt could be a csv')]
+    [Parameter(Mandatory,HelpMessage = 'File type to be imported, but really how you want it to be handled.  ie .txt file could be a "csv"')]
     [ValidateSet('csv','txt','json')]
     [String]$FileType
   )
@@ -282,6 +287,7 @@ function Import-FileData
   }
   return $importdata
 }
+#>
 
 function Send-eMail
 {
@@ -893,7 +899,7 @@ function Get-MyCredential
         [Parameter(Mandatory = $true)]
         [string]$credentialPath
       )
-      $credential = Get-Credential
+      $credential = Get-Credential -Message 'Credentials to Save'
       $credential | Export-Clixml -Path $credentialPath -Force
     }    
   }
@@ -916,7 +922,7 @@ Export-ModuleMember -Function Get-Versions
 Export-ModuleMember -Function Get-CurrentLineNumber
 Export-ModuleMember -Function Set-SafetySwitch
 Export-ModuleMember -Function Compare-FileHash
-Export-ModuleMember -Function Import-FileData  
+#Export-ModuleMember -Function Import-FileData  
 Export-ModuleMember -Function Send-eMail
 Export-ModuleMember -Function Get-TimeStamp
 Export-ModuleMember -Function New-File 
