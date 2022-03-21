@@ -506,7 +506,7 @@ function Get-TimeStamp
   param
   (
     [Parameter(Mandatory,Position = 0,HelpMessage = 'Use the following formats: "YYYYMMDD", "HHmmss" or for more formats "Help".',ParameterSetName = 'FileName Set')]
-    [ValidateSet('YYYYMMDD','HHmmss','YYYYMMDDHHmm','YYYY-MM-DD','JJJHHmmss','DayOfYear','MM-DD-YY_HH.mm.ss','MM/DD/YY HH:mm:ss','YY-MM-DD_24HH.mm','YY/MM/DD 24HH:mm','tzOffset','tzOffset-f','Help')] 
+    [ValidateSet('YYYYMMDD','HHmmss','YYYYMMDDHHmm','YYYY-MM-DD','JJJHHmmss','DayOfYear','MM/DD/YY HH:mm:ss','YY-MM-DD_24HH.mm','YY/MM/DD 24HH:mm','tzOffset','tzOffset-f','Help')] 
     [String]$Format
   )
   
