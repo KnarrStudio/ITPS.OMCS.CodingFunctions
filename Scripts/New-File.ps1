@@ -118,7 +118,7 @@
     [Switch]$Amend,
     
     [Parameter(Mandatory = $false,Position = 2,HelpMessage = 'Creates new file with "(1)"',ParameterSetName = 'Increment')]
-    [Switch]$Increment = $true,
+    [Switch]$Increment,
     
     [Parameter(Mandatory = $true,Position = 2,HelpMessage = 'Overwrite or Delete and recreate file',ParameterSetName = 'Overwrite')]
     [Switch]$Overwrite,
