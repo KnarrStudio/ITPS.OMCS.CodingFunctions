@@ -3,10 +3,10 @@
 
 Write-Host -Object $((Get-Item (Get-Location).Path).Parent.Name)
 
-$Major = 1     # Changes that cause the code to operate differently or large rewrites
-$minor = 5    # When an individual module or function is added or removed
-$Patch = 1     # Small updates to a function or module.  Note: This goes to zero when minor is updated
-$Manifest = 20  # For each manifest module update
+$Major = 2     # Changes that cause the code to operate differently or large rewrites
+$minor = 0    # When an individual module or function is added or removed
+$Patch = 0     # Small updates to a function or module.  Note: This goes to zero when minor is updated
+$Manifest = 21  # For each manifest module update
 
 
 $SplatSettings = @{
@@ -19,7 +19,7 @@ $SplatSettings = @{
   Description       = 'A sort of Function Library'
   PowerShellVersion = '4.0'
   NestedModules     = @('.\Modules\ITPS.OMCS.CodingFunctions.psm1', '.\Modules\ITPS.OMCS.MenuFunctions.psm1')
-  FunctionsToExport = 'Get-Versions', 'Get-CurrentLineNumber', 'Set-SafetySwitch', 'Compare-FileHash', 'Send-eMail', 'Get-TimeStamp', 'New-File','Get-MyCredential'
+  FunctionsToExport = 'Get-Versions', 'Get-CurrentLineNumber', 'Set-SafetySwitch', 'Compare-FileHash', 'New-File','Get-MyCredential'
   CmdletsToExport   = '*'
   ReleaseNotes      = "Removed 'Import-FileData'.  Corrected syntax"
 }

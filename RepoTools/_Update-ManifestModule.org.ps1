@@ -4,8 +4,7 @@
 $Major = 1      # Changes that cause the code to operate differently or large rewrites
 $minor = 2      # When an individual module or function is added
 $Patch = 0      # Small updates to a function or module.  Note: This goes to zero when minor is updated
-$Manifest = 11  # For each manifest module update
-
+$Manifest = 12  # For each manifest module update
 
 $SplatSettings = @{
 Path = '{0}\{1}.psd1' -f $((get-item (Get-Location).Path).Parent.FullName), $((get-item (Get-Location).Path).Parent.Name)
@@ -18,7 +17,7 @@ ModuleVersion = '{0}.{1}.{2}.{3}' -f $Major,$minor,$Patch,$Manifest
 Description = 'A few functions that I use often to code with' 
 PowerShellVersion = '4.0'
 NestedModules = @('.\Modules\ITPS.OMCS.CodingFunctions.psm1')
-FunctionsToExport = @( 'Send-eMail', 'Get-Versions', 'Get-CurrentLineNumber', 'Set-SafetySwitch', 'Compare-FileHash', 'Import-FileData  ', 'New-TimestampFile ', 'Get-TimeStamp'
+FunctionsToExport = @( 'Get-Versions', 'Get-CurrentLineNumber', 'Set-SafetySwitch', 'Compare-FileHash', 'New-File '
 )
 CmdletsToExport = '*'
 #ModuleList = '.\Modules\ITPS.OMCS.CodingFunctions.psm1'
